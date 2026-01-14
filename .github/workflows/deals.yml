@@ -1,0 +1,39 @@
+name: Baby Deals -> Google Sheet
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Zeiten in UTC (Berlin im Januar UTC+1)
+    # 09:00 Berlin -> 08:00 UTC
+    # 12:30 Berlin -> 11:30 UTC
+    # 16:30 Berlin -> 15:30 UTC
+    # 20:30 Berlin -> 19:30 UTC
+    - cron: "0 8 * * *"
+    - cron: "30 11 * * *"
+    - cron: "30 15 * * *"
+    - cron: "30 19 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          WORKSHEET_NAME: ${{ secrets.WORKSHEET_NAME }}
+        run: |
+          python scripts/deals.py
